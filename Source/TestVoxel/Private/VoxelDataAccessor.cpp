@@ -1,0 +1,56 @@
+#include "VoxelDataAccessor.h"
+#include "VoxelChunk.h"
+#include "VoxelWorld.h"
+
+FVoxelWorldGenAccessor::FVoxelWorldGenAccessor(UVoxelChunk* Chunk)
+	: Chunk(Chunk), World(Chunk->VoxelWorld)
+{
+	TempChunks.Reserve(20);
+}
+
+FVoxelWorldGenAccessor::~FVoxelWorldGenAccessor()
+{
+}
+
+inline FTemporaryChunk* FVoxelWorldGenAccessor::GetTempChunk(const FIntVector& ChunkPos)
+{
+	auto Temp = TempChunks.Find(ChunkPos);
+	if (Temp)
+	{
+		return *Temp;
+	}
+	else
+	{
+		FTemporaryChunk* NewChunk = Chunk->NewTemporaryChunk();
+
+		//This chunk is the chunk we're generating
+		if (Chunk->ChunkIndex == ChunkPos)
+		{
+			NewChunk->Priority = 0;
+		}
+		else
+		{
+			NewChunk->Priority = 10;
+		}
+
+		return TempChunks.Add(ChunkPos, NewChunk);
+	}
+}
+
+void FVoxelWorldGenAccessor::SetBlock(const FIntVector& VoxelPos, const FVoxelBlock& Block)
+{
+	FTemporaryChunk* TempChunk = GetTempChunk(FVoxelUtilities::VoxelPosToChunkIndex(VoxelPos));
+	TempChunk->SetData(FVoxelUtilities::VoxelPosToLocalPos(VoxelPos), Block);
+}
+
+FVoxelBlock FVoxelWorldGenAccessor::GetBlock(const FIntVector& VoxelPos)
+{
+	check(false);
+	return FVoxelBlock();
+}
+
+FVoxelBlock* FVoxelWorldGenAccessor::GetInternalArray(const FIntVector& ChunkPos)
+{
+	check(false);
+	return nullptr;
+}
