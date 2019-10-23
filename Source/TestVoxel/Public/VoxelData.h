@@ -5,6 +5,8 @@
 #include "VoxelUtilities.h"
 #include "HAL/ThreadSafeBool.h"
 
+class UVoxelChunk;
+
 struct FVoxelPolygonizedDataSection
 {
 	TArray<FVector> Vertices;
@@ -28,8 +30,18 @@ public:
 //6byte
 struct FVoxelBlock
 {
-	uint16 Type = 0;
+	uint16 Type;
 	FColor Color;
+
+	FVoxelBlock()
+		: Type(0), Color(FColor::White)
+	{
+
+	}
+	FVoxelBlock(uint16 Type, FColor Color = FColor::White)
+		: Type(Type), Color(Color)
+	{
+	}
 };
 
 
@@ -44,6 +56,13 @@ struct FTemporaryChunk
 	//TODO : Convert to bitflags to save memory
 	bool DirtyData[VOX_ARRAYSIZE] = {};
 
+	UVoxelChunk* OwnerChunk;
+
+	FTemporaryChunk(UVoxelChunk* Chunk)
+		: OwnerChunk(Chunk)
+	{
+	}
+
 	//Sets data, and sets dirty flag
 	inline void SetData(const int Index, const FVoxelBlock& Value)
 	{
@@ -54,7 +73,30 @@ struct FTemporaryChunk
 	{
 		SetData(VOX_AI(LocalPos.X, LocalPos.Y, LocalPos.Z), Value);
 	}
+
+	inline bool IsDataDirty(const int Index)
+	{
+		return DirtyData[Index];
+	}
+	inline bool IsDataDirty(const FIntVector& LocalPos)
+	{
+		return IsDataDirty(VOX_AI(LocalPos.X, LocalPos.Y, LocalPos.Z));
+	}
+
+	inline FVoxelBlock GetData(const int Index)
+	{
+		return Data[Index];
+	}
+	inline FVoxelBlock GetData(const FIntVector& LocalPos)
+	{
+		return GetData(VOX_AI(LocalPos.X, LocalPos.Y, LocalPos.Z));
+	}
+
+	bool operator<(const FTemporaryChunk& Other) const
+	{
+		return Other.Priority < Priority;
+	}
 };
 
-typedef TSimpleLinkedList<FTemporaryChunk> FTemporaryChunkList;
+typedef TSimpleLinkedList<FTemporaryChunk*> FTemporaryChunkList;
 

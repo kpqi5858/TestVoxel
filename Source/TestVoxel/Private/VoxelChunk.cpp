@@ -1,18 +1,83 @@
 #include "VoxelChunk.h"
+#include "VoxelDataAccessor.h"
+#include "VoxelDataStorage.h"
+#include "VoxelWorld.h"
+
+UVoxelChunk::UVoxelChunk()
+{
+	DataStorage = new FVoxelDataStorage(this);
+}
 
 void UVoxelChunk::TickChunk()
 {
 }
 
+void UVoxelChunk::Setup(AVoxelWorld* World, const FIntVector& ChunkPos)
+{
+	VoxelWorld = World;
+	ChunkIndex = ChunkPos;
+}
+
 void UVoxelChunk::GenerateWorld()
 {
+	FVoxelWorldGenAccessor* Accessor = new FVoxelWorldGenAccessor(this);
+	VoxelWorld->WorldGenInstance->GenerateWorld(this, Accessor);
+	delete Accessor;
 }
 
 void UVoxelChunk::PolygonizeNow()
 {
 }
 
+void UVoxelChunk::MergeTempChunkNow()
+{
+	auto TempChunksPtr = TemporaryChunkList.Pop();
+
+	TArray<FTemporaryChunk> TempChunks;
+	for (auto& Ptr : TempChunksPtr)
+	{
+		TempChunks.Add(*Ptr);
+	}
+
+	TempChunks.Sort();
+
+	const FIntVector Offset = GetMinPos();
+
+	for (int X = 0; X < VOX_CHUNKSIZE; X++)
+	for (int Y = 0; Y < VOX_CHUNKSIZE; Y++)
+	for (int Z = 0; Z < VOX_CHUNKSIZE; Z++)
+	{
+		const FIntVector LocalPos = FIntVector(X, Y, Z);
+		const FIntVector VoxelPos = Offset + LocalPos;
+		
+		for (int Index = TempChunks.Num() - 1; Index >= 0; Index--)
+		{
+			FTemporaryChunk& TempChunk = TempChunks[Index];
+			
+			if (TempChunk.IsDataDirty(LocalPos))
+			{
+				DataStorage->SetBlock(VoxelPos, TempChunk.GetData(LocalPos));
+				break;
+			}
+		}
+	}
+
+	for (auto& Ptr : TempChunksPtr)
+	{
+		delete Ptr;
+	}
+}
+
 FTemporaryChunk* UVoxelChunk::NewTemporaryChunk()
 {
-	return TemporaryChunkList.Add();
+	FTemporaryChunk* TempChunk = new FTemporaryChunk(this);
+	WorldGenRefs.Increment();
+
+	return TempChunk;
+}
+
+void UVoxelChunk::ReleaseTemporaryChunk(FTemporaryChunk* TempChunk)
+{
+	TemporaryChunkList.Add(TempChunk);
+	WorldGenRefs.Decrement();
 }

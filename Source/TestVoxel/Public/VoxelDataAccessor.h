@@ -3,7 +3,7 @@
 #include "VoxelData.h"
 
 class UVoxelChunk;
-class UVoxelWorld;
+class AVoxelWorld;
 struct FTemporaryChunk;
 
 //Interface for accessing the blocks
@@ -24,9 +24,9 @@ public:
 //Use with caution
 class FVoxelGlobalAccessor : public IVoxelDataAccessor
 {
-	FVoxelGlobalAccessor(UVoxelWorld* World);
+	FVoxelGlobalAccessor(AVoxelWorld* World);
 	
-	const UVoxelWorld* World;
+	const AVoxelWorld* World;
 
 public:
 	virtual void SetBlock(const FIntVector& VoxelPos, const FVoxelBlock& Block) override;
@@ -42,22 +42,25 @@ public:
 //And will merged with main storage of that chunk.
 class FVoxelWorldGenAccessor : public IVoxelDataAccessor
 {
+public:
 	//Chunk - The chunk that worldgen is working
-	//Will create temp chunk for that
 	FVoxelWorldGenAccessor(UVoxelChunk* Chunk);
 	virtual ~FVoxelWorldGenAccessor();
 
+private:
 	UVoxelChunk* Chunk;
-	UVoxelWorld* World;
+	AVoxelWorld* World;
 
 	//Temporary chunks
 	TMap<FIntVector, FTemporaryChunk*> TempChunks;
 
-private:
 	inline FTemporaryChunk* GetTempChunk(const FIntVector& ChunkPos);
-public:
-	virtual void SetBlock(const FIntVector& VoxelPos, const FVoxelBlock& Block) override;
 
+public:
+	//Releases temp chunks
+	virtual void ReleaseTempChunks();
+
+	virtual void SetBlock(const FIntVector& VoxelPos, const FVoxelBlock& Block) override;
 	//Can't be used
 	virtual FVoxelBlock GetBlock(const FIntVector& VoxelPos) override;
 	//Can't be used

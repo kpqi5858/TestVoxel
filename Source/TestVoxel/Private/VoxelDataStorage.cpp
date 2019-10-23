@@ -9,14 +9,22 @@ FVoxelDataStorage::FVoxelDataStorage(UVoxelChunk* Owner)
 
 void FVoxelDataStorage::SetBlock(const FIntVector& VoxelPos, const FVoxelBlock& Block)
 {
+	check(Owner->ChunkIndex == FVoxelUtilities::VoxelPosToChunkIndex(VoxelPos));
+	const FIntVector LocalPos = FVoxelUtilities::VoxelPosToLocalPos(VoxelPos);
+
+	InternalData[VOX_AI(LocalPos.X, LocalPos.Y, LocalPos.Z)] = Block;
 }
 
 FVoxelBlock FVoxelDataStorage::GetBlock(const FIntVector& VoxelPos)
 {
-	return FVoxelBlock();
+	check(Owner->ChunkIndex == FVoxelUtilities::VoxelPosToChunkIndex(VoxelPos));
+	const FIntVector LocalPos = FVoxelUtilities::VoxelPosToLocalPos(VoxelPos);
+
+	return InternalData[VOX_AI(LocalPos.X, LocalPos.Y, LocalPos.Z)];
 }
 
 FVoxelBlock* FVoxelDataStorage::GetInternalArray(const FIntVector& ChunkPos)
 {
-	return nullptr;
+	check(Owner->ChunkIndex == ChunkPos);
+	return InternalData;
 }

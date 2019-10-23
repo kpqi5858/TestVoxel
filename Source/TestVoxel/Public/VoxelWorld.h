@@ -6,10 +6,12 @@
 #include "TestVoxel.h"
 #include "VoxelData.h"
 #include "VoxelChunk.h"
+#include "VoxelWorldGen.h"
 #include "GameFramework/Actor.h"
 #include "VoxelWorld.generated.h"
 
 class UVoxelChunk;
+class UVoxelWorldGenerator;
 
 UCLASS()
 class TESTVOXEL_API AVoxelWorld : public AActor
@@ -19,9 +21,13 @@ class TESTVOXEL_API AVoxelWorld : public AActor
 public:	
 	AVoxelWorld();
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditAnywhere)
 	float VoxelSize = 100.f;
 
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UVoxelWorldGenerator> WorldGenerator;
+
+	UVoxelWorldGenerator* WorldGenInstance;
 
 protected:
 	virtual void BeginPlay() override;
@@ -32,8 +38,9 @@ public:
 	TMap<FIntVector, UVoxelChunk*> ChunksLoaded;
 
 	//Can create a chunk
-	UVoxelChunk* GetChunk(const FIntVector& VoxelPos);
+	UVoxelChunk* GetChunk(const FIntVector& ChunkPos);
 
+	void InitWorld();
 
 	inline FIntVector WorldPosToVoxelPos(const FVector& WorldPos) const
 	{

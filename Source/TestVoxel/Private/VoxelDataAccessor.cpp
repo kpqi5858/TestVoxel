@@ -10,6 +10,7 @@ FVoxelWorldGenAccessor::FVoxelWorldGenAccessor(UVoxelChunk* Chunk)
 
 FVoxelWorldGenAccessor::~FVoxelWorldGenAccessor()
 {
+	ReleaseTempChunks();
 }
 
 inline FTemporaryChunk* FVoxelWorldGenAccessor::GetTempChunk(const FIntVector& ChunkPos)
@@ -21,11 +22,12 @@ inline FTemporaryChunk* FVoxelWorldGenAccessor::GetTempChunk(const FIntVector& C
 	}
 	else
 	{
-		FTemporaryChunk* NewChunk = Chunk->NewTemporaryChunk();
+		FTemporaryChunk* NewChunk = World->GetChunk(ChunkPos)->NewTemporaryChunk();
 
 		//This chunk is the chunk we're generating
 		if (Chunk->ChunkIndex == ChunkPos)
 		{
+			//So give it high priority
 			NewChunk->Priority = 0;
 		}
 		else
@@ -35,6 +37,18 @@ inline FTemporaryChunk* FVoxelWorldGenAccessor::GetTempChunk(const FIntVector& C
 
 		return TempChunks.Add(ChunkPos, NewChunk);
 	}
+}
+
+void FVoxelWorldGenAccessor::ReleaseTempChunks()
+{
+	TArray<FTemporaryChunk*> TempChunkList;
+	TempChunks.GenerateValueArray(TempChunkList);
+
+	for (auto TempChunk : TempChunkList)
+	{
+		TempChunk->OwnerChunk->ReleaseTemporaryChunk(TempChunk);
+	}
+	TempChunks.Reset();
 }
 
 void FVoxelWorldGenAccessor::SetBlock(const FIntVector& VoxelPos, const FVoxelBlock& Block)

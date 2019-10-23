@@ -7,7 +7,7 @@
 class FVoxelUtilities
 {
 public:
-	static FORCEINLINE FIntVector VoxelPosToChunkIndex(FIntVector VoxelPos)
+	static FORCEINLINE FIntVector VoxelPosToChunkIndex(const FIntVector& VoxelPos)
 	{
 		//-1 / 16 needs to be -1, not zero
 		auto CustomDiv = [](int Val, int Div)
@@ -21,7 +21,7 @@ public:
 			, CustomDiv(VoxelPos.Z, VOX_CHUNKSIZE));
 	}
 
-	static FORCEINLINE FIntVector VoxelPosToLocalPos(FIntVector VoxelPos)
+	static FORCEINLINE FIntVector VoxelPosToLocalPos(const FIntVector& VoxelPos)
 	{
 		auto CustomModulo = [](int Val, int Div) {const int Result = Val % Div; return Result < 0 ? Result + Div : Result; };
 		return FIntVector(CustomModulo(VoxelPos.X, VOX_CHUNKSIZE)
@@ -69,7 +69,7 @@ class TSimpleLinkedList
 	struct InternalNode
 	{
 		InternalNode* Next = nullptr;
-		T* Data = new T();
+		T Data;
 	};
 
 	InternalNode* StartNode;
@@ -133,26 +133,26 @@ private:
 	}
 
 public:
-	//Adds a node and returns the data
-	T* Add()
+	//Adds a node
+	void Add(T Data)
 	{
 		InternalNode* Node = AddInternal();
-		return Node->Data;
+		Node->Data = Data;
 	}
 
 	//Deletes every node and pops the data. Thread safe
 	//SharedPtr for pointer safety
-	TArray<TSharedPtr<T>> Pop()
+	TArray<T> Pop()
 	{
 		FScopeSpinLock sl(Lock);
 
-		TArray<TSharedPtr<T>> Result;
+		TArray<T> Result;
 
 		auto AllNodes = ToArray();
 
 		for (InternalNode* Node : AllNodes)
 		{
-			Result.Add(MakeShareable(Node->Data));
+			Result.Add(Node->Data);
 			delete Node;
 		}
 

@@ -7,7 +7,8 @@
 #include "VoxelChunk.generated.h"
 
 
-class UVoxelWorld;
+class AVoxelWorld;
+class FVoxelDataStorage;
 
 enum class EChunkState : uint8
 {
@@ -31,16 +32,17 @@ public:
 
 	FVoxelPolygonizedData MeshData;
 
-	FVoxelBlock BlockData[VOX_ARRAYSIZE];
+	FVoxelDataStorage* DataStorage;
 
 	FTemporaryChunkList TemporaryChunkList;
+	FThreadSafeCounter WorldGenRefs;
 
 	//Chunk data accessor
 	IVoxelDataAccessor* DataAccessor;
 
 	FIntVector ChunkIndex;
 
-	UVoxelWorld* VoxelWorld;
+	AVoxelWorld* VoxelWorld;
 
 	bool IsRenderDirty = false;
 
@@ -49,10 +51,24 @@ public:
 	//Can be called infrequently
 	void TickChunk();
 
+	void Setup(AVoxelWorld* World, const FIntVector& ChunkPos);
+
 	void GenerateWorld();
 
 	void PolygonizeNow();
 
+	void MergeTempChunkNow();
+
 	FTemporaryChunk* NewTemporaryChunk();
+	void ReleaseTemporaryChunk(FTemporaryChunk* TempChunk);
 	
+
+	inline FIntVector GetMinPos()
+	{
+		return ChunkIndex * VOX_CHUNKSIZE;
+	}
+	inline FIntVector GetMaxPos()
+	{
+		return ChunkIndex * (VOX_CHUNKSIZE + 1) - FIntVector(1);
+	}
 };
