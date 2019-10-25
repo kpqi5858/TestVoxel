@@ -57,7 +57,7 @@ void FVoxelWorldGenAccessor::SetBlock(const FIntVector& VoxelPos, const FVoxelBl
 	TempChunk->SetData(FVoxelUtilities::VoxelPosToLocalPos(VoxelPos), Block);
 }
 
-FVoxelBlock FVoxelWorldGenAccessor::GetBlock(const FIntVector& VoxelPos)
+FVoxelBlock FVoxelWorldGenAccessor::GetBlock(const FIntVector& VoxelPos) const
 {
 	check(false);
 	return FVoxelBlock();

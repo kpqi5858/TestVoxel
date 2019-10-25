@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "VoxelWorld.h"
+#include "VoxelMesher.h"
 
 // Sets default values
 AVoxelWorld::AVoxelWorld()
@@ -55,5 +56,14 @@ void AVoxelWorld::InitWorld()
 
 	Test->GenerateWorld();
 	Test->MergeTempChunkNow();
+}
+
+TSharedPtr<FVoxelMesher> AVoxelWorld::GetMesher(UVoxelChunk* Chunk)
+{
+	FVoxelMesherDefaultSettings Settings;
+
+	Settings.VoxelSize = VoxelSize;
+
+	return MakeShareable(new FVoxelMesherDefault(Chunk, Settings));
 }
 

@@ -13,7 +13,7 @@ public:
 	//Sets block at position(Global)
 	virtual void SetBlock(const FIntVector& VoxelPos, const FVoxelBlock& Block) = 0;
 	//Gets block at position(Global)
-	virtual FVoxelBlock GetBlock(const FIntVector& VoxelPos) = 0;
+	virtual FVoxelBlock GetBlock(const FIntVector& VoxelPos) const = 0;
 
 	//Gets ENTIRE internal array at position(chunk index)
 	//Use with caution
@@ -31,7 +31,7 @@ class FVoxelGlobalAccessor : public IVoxelDataAccessor
 public:
 	virtual void SetBlock(const FIntVector& VoxelPos, const FVoxelBlock& Block) override;
 
-	virtual FVoxelBlock GetBlock(const FIntVector& VoxelPos) override;
+	virtual FVoxelBlock GetBlock(const FIntVector& VoxelPos) const override;
 
 	virtual FVoxelBlock* GetInternalArray(const FIntVector& ChunkPos) override;
 
@@ -62,7 +62,14 @@ public:
 
 	virtual void SetBlock(const FIntVector& VoxelPos, const FVoxelBlock& Block) override;
 	//Can't be used
-	virtual FVoxelBlock GetBlock(const FIntVector& VoxelPos) override;
+	virtual FVoxelBlock GetBlock(const FIntVector& VoxelPos) const override;
 	//Can't be used
 	virtual FVoxelBlock* GetInternalArray(const FIntVector& ChunkPos) override;
+};
+
+//For polygonizing the chunk
+//Can access near chunk's block
+class FVoxelMesherAccessor : public IVoxelDataAccessor
+{
+
 };

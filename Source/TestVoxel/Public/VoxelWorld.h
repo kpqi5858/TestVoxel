@@ -8,10 +8,14 @@
 #include "VoxelChunk.h"
 #include "VoxelWorldGen.h"
 #include "GameFramework/Actor.h"
+#include "RuntimeMeshComponent.h"
+
 #include "VoxelWorld.generated.h"
 
 class UVoxelChunk;
 class UVoxelWorldGenerator;
+class FVoxelMesher;
+class FMeshComponentWrapper;
 
 UCLASS()
 class TESTVOXEL_API AVoxelWorld : public AActor
@@ -29,6 +33,9 @@ public:
 
 	UVoxelWorldGenerator* WorldGenInstance;
 
+	TArray<FMeshComponentWrapper*> FreeMeshes;
+	
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -41,6 +48,8 @@ public:
 	UVoxelChunk* GetChunk(const FIntVector& ChunkPos);
 
 	void InitWorld();
+
+	TSharedPtr<FVoxelMesher> GetMesher(UVoxelChunk* Chunk);
 
 	inline FIntVector WorldPosToVoxelPos(const FVector& WorldPos) const
 	{

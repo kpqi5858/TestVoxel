@@ -37,9 +37,6 @@ public:
 	FTemporaryChunkList TemporaryChunkList;
 	FThreadSafeCounter WorldGenRefs;
 
-	//Chunk data accessor
-	IVoxelDataAccessor* DataAccessor;
-
 	FIntVector ChunkIndex;
 
 	AVoxelWorld* VoxelWorld;

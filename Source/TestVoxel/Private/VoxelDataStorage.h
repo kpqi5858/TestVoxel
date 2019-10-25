@@ -10,13 +10,13 @@ class FVoxelDataStorage : public IVoxelDataAccessor
 {
 	FVoxelBlock InternalData[VOX_ARRAYSIZE];
 
-	const UVoxelChunk* Owner;
+	UVoxelChunk* Owner;
 
 public:
 	FVoxelDataStorage(UVoxelChunk* Owner);
 
 	virtual void SetBlock(const FIntVector& VoxelPos, const FVoxelBlock& Block) override;
-	virtual FVoxelBlock GetBlock(const FIntVector& VoxelPos) override;
+	virtual FVoxelBlock GetBlock(const FIntVector& VoxelPos) const override;
 	virtual FVoxelBlock* GetInternalArray(const FIntVector& ChunkPos) override;
 
 };

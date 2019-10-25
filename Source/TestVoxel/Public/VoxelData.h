@@ -7,22 +7,43 @@
 
 class UVoxelChunk;
 
+enum class EBlockFace : uint8
+{
+	FRONT, BACK, LEFT, RIGHT, TOP, BOTTOM
+};
+
+#define VOX_FACENUM 6
+
 struct FVoxelPolygonizedDataSection
 {
 	TArray<FVector> Vertices;
 	TArray<int32> Tris;
 	TArray<FVector> Normals;
 	TArray<FColor> Colors;
+	TArray<FVector2D> UVs;
 };
 
 struct FVoxelPolygonizedData
 {
 	TArray<FVoxelPolygonizedDataSection> Sections;
+	
+	//Section index by block type
+	TMap<uint16, int> SectionIndices;
 
 public:
-	FVoxelPolygonizedDataSection& NewSection()
+	inline FVoxelPolygonizedDataSection& GetSection(const uint16 BlockType)
 	{
-		return Sections.AddDefaulted_GetRef();
+		int* Find = SectionIndices.Find(BlockType);
+
+		if (Find)
+		{
+			return Sections[*Find];
+		}
+		else
+		{
+			SectionIndices.Add(BlockType, SectionIndices.Num());
+			return Sections.AddDefaulted_GetRef();
+		}
 	}
 };
 

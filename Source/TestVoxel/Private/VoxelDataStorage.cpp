@@ -15,7 +15,7 @@ void FVoxelDataStorage::SetBlock(const FIntVector& VoxelPos, const FVoxelBlock& 
 	InternalData[VOX_AI(LocalPos.X, LocalPos.Y, LocalPos.Z)] = Block;
 }
 
-FVoxelBlock FVoxelDataStorage::GetBlock(const FIntVector& VoxelPos)
+FVoxelBlock FVoxelDataStorage::GetBlock(const FIntVector& VoxelPos) const
 {
 	check(Owner->ChunkIndex == FVoxelUtilities::VoxelPosToChunkIndex(VoxelPos));
 	const FIntVector LocalPos = FVoxelUtilities::VoxelPosToLocalPos(VoxelPos);

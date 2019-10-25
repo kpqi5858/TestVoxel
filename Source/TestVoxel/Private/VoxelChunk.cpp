@@ -2,6 +2,7 @@
 #include "VoxelDataAccessor.h"
 #include "VoxelDataStorage.h"
 #include "VoxelWorld.h"
+#include "VoxelMesher.h"
 
 UVoxelChunk::UVoxelChunk()
 {
@@ -27,6 +28,9 @@ void UVoxelChunk::GenerateWorld()
 
 void UVoxelChunk::PolygonizeNow()
 {
+	auto Mesher = VoxelWorld->GetMesher(this);
+	Mesher->Polygonize(MeshData);
+
 }
 
 void UVoxelChunk::MergeTempChunkNow()
