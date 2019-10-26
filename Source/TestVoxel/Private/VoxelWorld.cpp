@@ -2,6 +2,7 @@
 
 #include "VoxelWorld.h"
 #include "VoxelMesher.h"
+#include "VoxelMeshComponentWrapper.h"
 
 // Sets default values
 AVoxelWorld::AVoxelWorld()
@@ -19,11 +20,22 @@ void AVoxelWorld::BeginPlay()
 	InitWorld();
 }
 
+FMeshComponentWrapper* AVoxelWorld::NewMeshComponentInternal()
+{
+	FMeshComponentWrapper* MeshComp = new FRMCWrapper(this);
+	return AllMeshes.Add_GetRef(MeshComp);
+}
+
 // Called every frame
 void AVoxelWorld::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+void AVoxelWorld::EndPlay(EEndPlayReason::Type Reason)
+{
+	DestroyWorld();
 }
 
 UVoxelChunk* AVoxelWorld::GetChunk(const FIntVector& ChunkPos)
@@ -56,6 +68,7 @@ void AVoxelWorld::InitWorld()
 
 	Test->GenerateWorld();
 	Test->MergeTempChunkNow();
+	Test->PolygonizeNow();
 }
 
 TSharedPtr<FVoxelMesher> AVoxelWorld::GetMesher(UVoxelChunk* Chunk)
@@ -63,7 +76,36 @@ TSharedPtr<FVoxelMesher> AVoxelWorld::GetMesher(UVoxelChunk* Chunk)
 	FVoxelMesherDefaultSettings Settings;
 
 	Settings.VoxelSize = VoxelSize;
+	Settings.bFaceOcclusionBorders = false;
 
 	return MakeShareable(new FVoxelMesherDefault(Chunk, Settings));
+}
+
+FMeshComponentWrapper* AVoxelWorld::GetFreeMeshComponent()
+{
+	if (FreeMeshes.Num())
+	{
+		return FreeMeshes.Pop(false);
+	}
+	else
+	{
+		return NewMeshComponentInternal();
+	}
+}
+
+void AVoxelWorld::FreeMeshComponent(FMeshComponentWrapper* MeshComponent)
+{
+	FreeMeshes.Add(MeshComponent);
+}
+
+void AVoxelWorld::DestroyWorld()
+{
+	ChunksLoaded.Empty();
+	for (auto& MeshComp : AllMeshes)
+	{
+		delete MeshComp;
+	}
+	AllMeshes.Empty();
+	FreeMeshes.Empty();
 }
 

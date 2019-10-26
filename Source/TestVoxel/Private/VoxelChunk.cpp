@@ -3,6 +3,7 @@
 #include "VoxelDataStorage.h"
 #include "VoxelWorld.h"
 #include "VoxelMesher.h"
+#include "VoxelMeshComponentWrapper.h"
 
 UVoxelChunk::UVoxelChunk()
 {
@@ -31,6 +32,10 @@ void UVoxelChunk::PolygonizeNow()
 	auto Mesher = VoxelWorld->GetMesher(this);
 	Mesher->Polygonize(MeshData);
 
+	auto Mesh = VoxelWorld->GetFreeMeshComponent();
+	Mesh->SetPosition(GetWorldPos());
+	Mesh->SetVisiblity(true);
+	Mesh->UpdateMeshData(MeshData);
 }
 
 void UVoxelChunk::MergeTempChunkNow()
@@ -84,4 +89,9 @@ void UVoxelChunk::ReleaseTemporaryChunk(FTemporaryChunk* TempChunk)
 {
 	TemporaryChunkList.Add(TempChunk);
 	WorldGenRefs.Decrement();
+}
+
+FVector UVoxelChunk::GetWorldPos() const
+{
+	return FVector(GetMinPos()) * VoxelWorld->VoxelSize;
 }

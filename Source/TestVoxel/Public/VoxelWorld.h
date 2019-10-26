@@ -34,13 +34,16 @@ public:
 	UVoxelWorldGenerator* WorldGenInstance;
 
 	TArray<FMeshComponentWrapper*> FreeMeshes;
-	
+	TArray<FMeshComponentWrapper*> AllMeshes;
 
 protected:
 	virtual void BeginPlay() override;
 
+	FMeshComponentWrapper* NewMeshComponentInternal();
+
 public:	
 	virtual void Tick(float DeltaTime) override;
+	virtual void EndPlay(EEndPlayReason::Type Reason) override;
 
 	TMap<FIntVector, UVoxelChunk*> ChunksLoaded;
 
@@ -50,6 +53,13 @@ public:
 	void InitWorld();
 
 	TSharedPtr<FVoxelMesher> GetMesher(UVoxelChunk* Chunk);
+
+
+	FMeshComponentWrapper* GetFreeMeshComponent();
+	void FreeMeshComponent(FMeshComponentWrapper* MeshComponent);
+
+	//Destroyes everything
+	void DestroyWorld();
 
 	inline FIntVector WorldPosToVoxelPos(const FVector& WorldPos) const
 	{

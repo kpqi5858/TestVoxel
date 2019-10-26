@@ -28,10 +28,13 @@ void FVoxelMesherDefault::Polygonize(FVoxelPolygonizedData& MeshDataOut)
 		
 		FVoxelPolygonizedDataSection& ThisSection = MeshDataOut.GetSection(CurrentBlock.Type);
 
-		for (int FaceNum = 0; FaceNum < VOX_FACENUM; FaceNum++)
+		if (CurrentBlock.Type)
 		{
-			EBlockFace Face = static_cast<EBlockFace>(FaceNum);
-			CreateFace(X, Y, Z, Face, CurrentBlock.Color, ThisSection);
+			for (int FaceNum = 0; FaceNum < VOX_FACENUM; FaceNum++)
+			{
+				EBlockFace Face = static_cast<EBlockFace>(FaceNum);
+				CreateFace(X, Y, Z, Face, CurrentBlock.Color, ThisSection);
+			}
 		}
 	}
 }
@@ -66,7 +69,7 @@ inline void FVoxelMesherDefault::CreateFace(const int& X, const int& Y, const in
 	BoxVerts[6] = FVector(VoxSize, 0, 0);
 	BoxVerts[7] = FVector(0, 0, 0);
 
-	auto VertexBuilder = [&](FVector& V, FVector& N, FVector2D& UV)
+	auto VertexBuilder = [&](FVector& V, FVector& N, FVector2D UV)
 	{
 		ThisSection.Vertices.Add(V + FVector(X * VoxSize, Y * VoxSize, Z * VoxSize));
 		if (Settings.bCreateNormals)		ThisSection.Normals.Add(N);

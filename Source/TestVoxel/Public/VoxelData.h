@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Materials/MaterialInstance.h"
 #include "TestVoxel.h"
 #include "VoxelUtilities.h"
 #include "HAL/ThreadSafeBool.h"
@@ -21,6 +22,8 @@ struct FVoxelPolygonizedDataSection
 	TArray<FVector> Normals;
 	TArray<FColor> Colors;
 	TArray<FVector2D> UVs;
+
+	UMaterialInstance* Material;
 };
 
 struct FVoxelPolygonizedData

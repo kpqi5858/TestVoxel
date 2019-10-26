@@ -60,12 +60,14 @@ public:
 	void ReleaseTemporaryChunk(FTemporaryChunk* TempChunk);
 	
 
-	inline FIntVector GetMinPos()
+	inline FIntVector GetMinPos() const
 	{
 		return ChunkIndex * VOX_CHUNKSIZE;
 	}
-	inline FIntVector GetMaxPos()
+	inline FIntVector GetMaxPos() const
 	{
 		return ChunkIndex * (VOX_CHUNKSIZE + 1) - FIntVector(1);
 	}
+
+	FVector GetWorldPos() const;
 };
