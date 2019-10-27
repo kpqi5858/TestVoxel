@@ -3,6 +3,10 @@
 #include "CoreMinimal.h"
 #include "HAL/ThreadSafeBool.h"
 
+enum class EBlockFace : uint8
+{
+	FRONT, BACK, LEFT, RIGHT, TOP, BOTTOM
+};
 
 class FVoxelUtilities
 {
@@ -27,6 +31,50 @@ public:
 		return FIntVector(CustomModulo(VoxelPos.X, VOX_CHUNKSIZE)
 			, CustomModulo(VoxelPos.Y, VOX_CHUNKSIZE)
 			, CustomModulo(VoxelPos.Z, VOX_CHUNKSIZE));
+	}
+
+	static inline FIntVector GetFaceOffset(const EBlockFace& Face)
+	{
+		switch (Face)
+		{
+		case EBlockFace::FRONT:
+			return FIntVector(1, 0, 0);
+		case EBlockFace::BACK:
+			return FIntVector(-1, 0, 0);
+		case EBlockFace::LEFT:
+			return FIntVector(0, -1, 0);
+		case EBlockFace::RIGHT:
+			return FIntVector(0, 1, 0);
+		case EBlockFace::TOP:
+			return FIntVector(0, 0, 1);
+		case EBlockFace::BOTTOM:
+			return FIntVector(0, 0, -1);
+		default:
+			check(false);
+			return FIntVector(0);
+		}
+	};
+
+	static inline EBlockFace GetOppositeFace(const EBlockFace& Face)
+	{
+		switch (Face)
+		{
+		case EBlockFace::FRONT:
+			return EBlockFace::BACK;
+		case EBlockFace::BACK:
+			return EBlockFace::FRONT;
+		case EBlockFace::LEFT:
+			return EBlockFace::RIGHT;
+		case EBlockFace::RIGHT:
+			return EBlockFace::LEFT;
+		case EBlockFace::TOP:
+			return EBlockFace::BOTTOM;
+		case EBlockFace::BOTTOM:
+			return EBlockFace::TOP;
+		default:
+			check(false);
+			return EBlockFace::FRONT;
+		}
 	}
 };
 

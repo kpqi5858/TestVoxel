@@ -8,11 +8,6 @@
 
 class UVoxelChunk;
 
-enum class EBlockFace : uint8
-{
-	FRONT, BACK, LEFT, RIGHT, TOP, BOTTOM
-};
-
 #define VOX_FACENUM 6
 
 struct FVoxelPolygonizedDataSection
@@ -23,7 +18,7 @@ struct FVoxelPolygonizedDataSection
 	TArray<FColor> Colors;
 	TArray<FVector2D> UVs;
 
-	UMaterialInstance* Material;
+	UMaterialInterface* Material;
 };
 
 struct FVoxelPolygonizedData
