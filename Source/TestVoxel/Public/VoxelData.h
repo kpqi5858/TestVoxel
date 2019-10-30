@@ -4,6 +4,8 @@
 #include "Materials/MaterialInstance.h"
 #include "TestVoxel.h"
 #include "VoxelUtilities.h"
+#include "VoxelBlockRegistry.h"
+#include "VoxelBlock.h"
 #include "HAL/ThreadSafeBool.h"
 
 class UVoxelChunk;
@@ -19,6 +21,7 @@ struct FVoxelPolygonizedDataSection
 	TArray<FVector2D> UVs;
 
 	UMaterialInterface* Material;
+	bool bHasCollision;
 };
 
 struct FVoxelPolygonizedData
@@ -40,7 +43,17 @@ public:
 		else
 		{
 			SectionIndices.Add(BlockType, SectionIndices.Num());
-			return Sections.AddDefaulted_GetRef();
+
+			auto& Section = Sections.AddDefaulted_GetRef();
+			
+			UVoxelBlock* Block = GETBLOCK_INDEX(BlockType);
+
+			Section.bHasCollision = Block->bDoCollisions;
+			Section.Material = Block->Material;
+
+			check(Section.Material);
+
+			return Section;
 		}
 	}
 };
@@ -60,6 +73,18 @@ struct FVoxelBlock
 	FVoxelBlock(uint16 Type, FColor Color = FColor::White)
 		: Type(Type), Color(Color)
 	{
+	}
+
+	FVoxelBlock(UVoxelBlock* Block, FColor ArgColor = FColor::White)
+	{
+		check(Block->bIsRegistered);
+		Color = ArgColor;
+		Type = Block->TypeId;
+	}
+
+	inline UVoxelBlock* GetVoxelBlock() const
+	{
+		return GETBLOCK_INDEX(Type);
 	}
 };
 

@@ -16,6 +16,7 @@ class UVoxelChunk;
 class UVoxelWorldGenerator;
 class FVoxelMesher;
 class FMeshComponentWrapper;
+class AVoxelGlobalManager;
 
 UCLASS()
 class TESTVOXEL_API AVoxelWorld : public AActor
@@ -31,10 +32,20 @@ public:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UVoxelWorldGenerator> WorldGenerator;
 
+	UPROPERTY(EditAnywhere)
+	AVoxelGlobalManager* GlobalManagerDefault;
+
+	UPROPERTY()
 	UVoxelWorldGenerator* WorldGenInstance;
+
+	UPROPERTY()
+	AVoxelGlobalManager* ActiveGlobalManager;
+
 
 	TArray<FMeshComponentWrapper*> FreeMeshes;
 	TArray<FMeshComponentWrapper*> AllMeshes;
+
+	FCriticalSection ChunkListLock;
 
 protected:
 	virtual void BeginPlay() override;
@@ -51,6 +62,9 @@ public:
 	UVoxelChunk* GetChunk(const FIntVector& ChunkPos);
 
 	void InitWorld();
+
+	void SetGlobalManager(AVoxelGlobalManager* Manager);
+	AVoxelGlobalManager* GetGlobalManager();
 
 	TSharedPtr<FVoxelMesher> GetMesher(UVoxelChunk* Chunk);
 

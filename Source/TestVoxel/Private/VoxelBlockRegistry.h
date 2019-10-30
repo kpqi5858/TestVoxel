@@ -3,10 +3,10 @@
 #include "CoreMinimal.h"
 #include "TestVoxel.h"
 
-//Parameter is FName, FString, or FText
+//Parameter is FName, FString
 #define GETBLOCK(x) FBlockRegistry::GetInstance_Ptr()->GetBlock(x)
-//Parameter is from TEXT(x) macro
-#define GETBLOCK_T(x) FBlockRegistry::GetInstance_Ptr()->GetBlock_(x)
+//Parameter is TCHAR
+#define GETBLOCK_T(x) FBlockRegistry::GetInstance_Ptr()->GetBlock(FName(x))
 //Parameter is const char*
 #define GETBLOCK_C(x) GETBLOCK_T(TEXT(x))
 //Parameter is unique index
@@ -29,16 +29,38 @@ public:
 	void Setup();
 	void Reset();
 
-	UVoxelBlock* GetBlock(FName Name);
-	UVoxelBlock* GetBlock(FText Name);
-	UVoxelBlock* GetBlock(FString Name);
-
-	UVoxelBlock* GetBlock_(FName Name)
+	UVoxelBlock* GetBlockByIndex(uint16 Index)
 	{
-		return GetBlock(Name);
+		return UniqueIndices[Index];
 	}
 
-	UVoxelBlock* GetBlockByIndex(uint16 Index);
+	UVoxelBlock* GetBlock(FName Name)
+	{
+		UVoxelBlock** Find = BlockInstanceRegistry.Find(Name);
+		if (Find)
+		{
+			return *Find;
+		}
+		else
+		{
+			UE_LOG(LogTestVoxel, Error, TEXT("Unknown block name : %s"), *Name.ToString());
+			return GetBlockByIndex(0);
+		}
+	}
+	UVoxelBlock* GetBlock(FString Name)
+	{
+		FName Nam = FName(*Name, EFindName::FNAME_Find);
+		if (Nam != NAME_None)
+		{
+			return GetBlock(Nam);
+		}
+		else
+		{
+			UE_LOG(LogTestVoxel, Error, TEXT("Unknown block name string : %s"), *Name);
+			return GetBlockByIndex(0);
+		}
+	}
+
 };
 
 class TESTVOXEL_API FBlockRegistry

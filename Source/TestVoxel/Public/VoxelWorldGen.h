@@ -40,11 +40,14 @@ public:
 	virtual void GenerateWorld(UVoxelChunk* Chunk, IVoxelDataAccessor* DataAccessor) override;
 };
 
-UCLASS()
+UCLASS(Blueprintable)
 class TESTVOXEL_API UVoxelFlatWorldGenerator : public UVoxelWorldGenerator
 {
 	GENERATED_BODY()
 
 public:
+	UPROPERTY(EditDefaultsOnly)
+	FName BlockName = TEXT("SolidDefault");
+
 	virtual void GenerateWorld(UVoxelChunk* Chunk, IVoxelDataAccessor* DataAccessor) override;
 };

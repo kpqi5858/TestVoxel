@@ -3,6 +3,7 @@
 #include "VoxelWorld.h"
 #include "VoxelMesher.h"
 #include "VoxelMeshComponentWrapper.h"
+#include "VoxelGlobalManager.h"
 
 // Sets default values
 AVoxelWorld::AVoxelWorld()
@@ -40,6 +41,8 @@ void AVoxelWorld::EndPlay(EEndPlayReason::Type Reason)
 
 UVoxelChunk* AVoxelWorld::GetChunk(const FIntVector& ChunkPos)
 {
+	FScopeLock Lock(&ChunkListLock);
+
 	auto Find = ChunksLoaded.Find(ChunkPos);
 	if (Find) 
 		return *Find;
@@ -64,11 +67,32 @@ void AVoxelWorld::InitWorld()
 
 	WorldGenInstance = WorldGenInst;
 
+	if (GlobalManagerDefault)
+	{
+		SetGlobalManager(GlobalManagerDefault);
+	}
+
 	auto Test = GetChunk(FIntVector(-1));
 
 	Test->GenerateWorld();
 	Test->MergeTempChunkNow();
 	Test->PolygonizeNow();
+}
+
+void AVoxelWorld::SetGlobalManager(AVoxelGlobalManager* Manager)
+{
+	//If already exists, replace
+	if (ActiveGlobalManager)
+	{
+		ActiveGlobalManager->DeregisterVoxelWorld(this);
+	}
+	Manager->RegisterVoxelWorld(this);
+	ActiveGlobalManager = Manager;
+}
+
+AVoxelGlobalManager* AVoxelWorld::GetGlobalManager()
+{
+	return ActiveGlobalManager;
 }
 
 TSharedPtr<FVoxelMesher> AVoxelWorld::GetMesher(UVoxelChunk* Chunk)

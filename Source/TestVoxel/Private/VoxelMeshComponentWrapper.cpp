@@ -15,8 +15,8 @@ void FRMCWrapper::UpdateMeshData(FVoxelPolygonizedData& Data)
 	for (int Index = 0; Index < Num; Index++)
 	{
 		auto& Section = Data.Sections[Index];
-		RMC->SetSectionMaterial(Index, Section.Material);
-		RMC->CreateMeshSection(Num, Section.Vertices, Section.Tris, Section.Normals, Section.UVs, Section.Colors, TArray<FRuntimeMeshTangent>(), true);
+		RMC->SetMaterial(Index, Section.Material);
+		RMC->CreateMeshSection(Index, Section.Vertices, Section.Tris, Section.Normals, Section.UVs, Section.Colors, TArray<FRuntimeMeshTangent>(), Section.bHasCollision);
 	}
 }
 

@@ -4,13 +4,17 @@
 #include "AssetRegistryModule.h"
 #include "Engine/Blueprint.h"
 
+TWeakPtr<FBlockRegistryInstance> FBlockRegistry::InstancePtr = TWeakPtr<FBlockRegistryInstance>();
+FBlockRegistryInstance* FBlockRegistry::InstancePtrRaw = nullptr;
+
 FBlockRegistryInstance::FBlockRegistryInstance()
 {
-
+	Setup();
 }
 
 FBlockRegistryInstance::~FBlockRegistryInstance()
 {
+	Reset();
 }
 
 void FBlockRegistryInstance::Setup()
@@ -30,9 +34,11 @@ void FBlockRegistryInstance::Setup()
 		check(RawClass->IsChildOf(BlockClass));
 
 		UVoxelBlock* Block = NewObject<UVoxelBlock>(GetTransientPackage(), RawClass);
-		Block->AddToRoot();
 
 		if (Block->bDontRegister) continue;
+
+		//Prevent it from gc
+		Block->AddToRoot();
 
 		FName BlockName = Block->RegistryName;
 		if (!BlockName.IsValid())
@@ -50,7 +56,6 @@ void FBlockRegistryInstance::Setup()
 	}
 
 	checkf(BlockInstanceRegistry.Num() < 65536, TEXT("UniqueIndex collision (There's too many blocks!!), BlockInstanceRegistry.Num() = %d"), BlockInstanceRegistry.Num());
-
 
 	//TypeId Indexing
 
@@ -74,10 +79,12 @@ void FBlockRegistryInstance::Setup()
 				UE_LOG(LogTestVoxel, Warning, TEXT("OverrideTypeId is higher than UniqueIndices.Num(). Resizing.."));
 				UniqueIndices.AddDefaulted(OverrideTypeId - UniqueIndices.Num() + 1);
 			}
+			//Is there's collision?
 			if (UniqueIndices[OverrideTypeId] != nullptr)
 			{
 				UE_LOG(LogTestVoxel, Error, TEXT("OverrideTypeId collision, OverrideTypeId = %d"), OverrideTypeId);
 
+				//Will be automatically indexed
 				Block->OverrideTypeId = -1;
 				continue;
 			}
@@ -97,7 +104,7 @@ void FBlockRegistryInstance::Setup()
 			//Iterate through UniqueIndices and find an empty(nullptr) slot
 			while (true)
 			{
-				if (UniqueIndices[LastIndex] != nullptr)
+				if (UniqueIndices[LastIndex] == nullptr)
 				{
 					//And assign it
 					UniqueIndices[LastIndex] = Block;
@@ -111,6 +118,9 @@ void FBlockRegistryInstance::Setup()
 	//Finally, Assign TypeId
 	for (int Index = 0; Index < BlocksArray.Num(); Index++)
 	{
+		//Should not happen in normal case, but too high OverrideTypeId, this can happen.
+		if (UniqueIndices[Index] == nullptr) continue;
+
 		UniqueIndices[Index]->TypeId = Index;
 		UniqueIndices[Index]->bIsRegistered = true;
 	}
@@ -120,25 +130,33 @@ void FBlockRegistryInstance::Setup()
 
 void FBlockRegistryInstance::Reset()
 {
-	UniqueIndices.Empty();
 	BlockInstanceRegistry.Empty();
+
+	for (auto& Block : UniqueIndices)
+	{
+		if (Block)
+		{
+			Block->RemoveFromRoot();
+		}
+	}
+	UniqueIndices.Empty();
 
 	bIsInitialized = false;
 }
+
 
 
 void FBlockRegistry::FindVoxelBlocks(TArray<TWeakObjectPtr<UClass>>& BlockClassesOut)
 {
 	const auto BlockClass = UVoxelBlock::StaticClass();
 
-	TArray<UObject*> Objs;
-	GetObjectsOfClass(BlockClass, Objs);
+	TArray<UClass*> Objs;
+	GetDerivedClasses(BlockClass, Objs);
 
 	//Register native classes
 	
-	for (auto& Obj : Objs)
+	for (auto& Class : Objs)
 	{
-		UClass* Class = CastChecked<UClass>(Obj);
 		check(Class->IsChildOf(BlockClass));
 
 		EClassFlags Flags = Class->GetClassFlags();
@@ -149,7 +167,7 @@ void FBlockRegistry::FindVoxelBlocks(TArray<TWeakObjectPtr<UClass>>& BlockClasse
 		}
 	}
 
-	//Load, Register BP classes
+	//Load, and register BP classes
 
 	FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(FName("AssetRegistry"));
 	IAssetRegistry& AssetRegistry = AssetRegistryModule.Get();

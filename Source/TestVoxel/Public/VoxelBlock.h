@@ -25,7 +25,7 @@ public:
 
 	//If nullptr, the block will not visible
 	UPROPERTY(EditDefaultsOnly)
-	UMaterialInterface* Material;
+	UMaterialInterface* Material = nullptr;
 
 	//Overrides the type id if not negative number, Do not write high values
 	UPROPERTY(EditDefaultsOnly)
@@ -37,10 +37,8 @@ public:
 
 
 	//Unique type id, DON'T SAVE THIS VALUE, Save RegistryName instead
-	UPROPERTY(Transient, BlueprintReadOnly)
 	uint16 TypeId = 0;
 
-	UPROPERTY(Transient, BlueprintReadOnly)
 	bool bIsRegistered = false;
 };
 

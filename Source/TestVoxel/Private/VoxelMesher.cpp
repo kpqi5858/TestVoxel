@@ -2,6 +2,7 @@
 #include "VoxelDataAccessor.h"
 #include "VoxelChunk.h"
 #include "VoxelDataStorage.h"
+#include "VoxelBlock.h"
 
 FVoxelMesherDefault::FVoxelMesherDefault(UVoxelChunk* Chunk, FVoxelMesherDefaultSettings Settings)
 	: FVoxelMesher(Chunk), Settings(Settings)
@@ -25,16 +26,19 @@ void FVoxelMesherDefault::Polygonize(FVoxelPolygonizedData& MeshDataOut)
 		const FIntVector LocalPos = FIntVector(X, Y, Z);
 		const FIntVector VoxelPos = ChunkVoxelPos + LocalPos;
 		const FVoxelBlock& CurrentBlock = InternalArray[VOX_AI(X, Y, Z)];
-		
+
+		UVoxelBlock* VoxelBlock = CurrentBlock.GetVoxelBlock();
+
+		//If material is null, this means it is not visible and should never be polygonized
+		if (VoxelBlock->Material == nullptr) continue;
+
 		FVoxelPolygonizedDataSection& ThisSection = MeshDataOut.GetSection(CurrentBlock.Type);
 
-		if (CurrentBlock.Type)
+
+		for (int FaceNum = 0; FaceNum < VOX_FACENUM; FaceNum++)
 		{
-			for (int FaceNum = 0; FaceNum < VOX_FACENUM; FaceNum++)
-			{
-				EBlockFace Face = static_cast<EBlockFace>(FaceNum);
-				CreateFace(X, Y, Z, Face, CurrentBlock.Color, ThisSection);
-			}
+			EBlockFace Face = static_cast<EBlockFace>(FaceNum);
+			CreateFace(X, Y, Z, Face, CurrentBlock.Color, ThisSection);
 		}
 	}
 }
