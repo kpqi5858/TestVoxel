@@ -46,7 +46,7 @@ public:
 
 			auto& Section = Sections.AddDefaulted_GetRef();
 			
-			UVoxelBlock* Block = GETBLOCK_INDEX(BlockType);
+			UVoxelBlock* Block = GETBLOCK(BlockType);
 
 			Section.bHasCollision = Block->bDoCollisions;
 			Section.Material = Block->Material;
@@ -84,7 +84,9 @@ struct FVoxelBlock
 
 	inline UVoxelBlock* GetVoxelBlock() const
 	{
-		return GETBLOCK_INDEX(Type);
+		//GETBLOCK(Color);
+
+		return GETBLOCK(Type);
 	}
 };
 
@@ -100,10 +102,9 @@ struct FTemporaryChunk
 	//TODO : Convert to bitflags to save memory
 	bool DirtyData[VOX_ARRAYSIZE] = {};
 
-	UVoxelChunk* OwnerChunk;
+	UVoxelChunk* OwnerChunk = nullptr;
 
-	FTemporaryChunk(UVoxelChunk* Chunk)
-		: OwnerChunk(Chunk)
+	FTemporaryChunk()
 	{
 	}
 
@@ -143,4 +144,3 @@ struct FTemporaryChunk
 };
 
 typedef TSimpleLinkedList<FTemporaryChunk*> FTemporaryChunkList;
-

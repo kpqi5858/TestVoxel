@@ -15,7 +15,7 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	FName RegistryName;
 
-	//If false, no collision
+	//If false, no collision (Give it proper VisiblityType)
 	UPROPERTY(EditDefaultsOnly)
 	bool bDoCollisions = true;
 
@@ -36,10 +36,19 @@ public:
 	bool bDontRegister = false;
 
 
+	UPROPERTY(BlueprintReadOnly)
+	bool bIsRegistered = false;
+
 	//Unique type id, DON'T SAVE THIS VALUE, Save RegistryName instead
 	uint16 TypeId = 0;
 
-	bool bIsRegistered = false;
+
+	//TypeId getter for blueprints
+	UFUNCTION(BlueprintCallable)
+	int GetTypeId() const
+	{
+		return TypeId;
+	}
 };
 
 

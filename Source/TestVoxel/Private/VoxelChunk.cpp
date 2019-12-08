@@ -4,6 +4,7 @@
 #include "VoxelWorld.h"
 #include "VoxelMesher.h"
 #include "VoxelMeshComponentWrapper.h"
+#include "VoxelGlobalManager.h"
 
 UVoxelChunk::UVoxelChunk()
 {
@@ -48,6 +49,7 @@ void UVoxelChunk::MergeTempChunkNow()
 		TempChunks.Add(*Ptr);
 	}
 
+	//Sort by Priority
 	TempChunks.Sort();
 
 	const FIntVector Offset = GetMinPos();
@@ -73,13 +75,14 @@ void UVoxelChunk::MergeTempChunkNow()
 
 	for (auto& Ptr : TempChunksPtr)
 	{
-		delete Ptr;
+		VoxelWorld->ActiveGlobalManager->ReleaseTempChunk(Ptr);
 	}
 }
 
 FTemporaryChunk* UVoxelChunk::NewTemporaryChunk()
 {
-	FTemporaryChunk* TempChunk = new FTemporaryChunk(this);
+	FTemporaryChunk* TempChunk = VoxelWorld->ActiveGlobalManager->GetNewTempChunk(this);
+	
 	WorldGenRefs.Increment();
 
 	return TempChunk;
@@ -88,6 +91,7 @@ FTemporaryChunk* UVoxelChunk::NewTemporaryChunk()
 void UVoxelChunk::ReleaseTemporaryChunk(FTemporaryChunk* TempChunk)
 {
 	TemporaryChunkList.Add(TempChunk);
+
 	WorldGenRefs.Decrement();
 }
 

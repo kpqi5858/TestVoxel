@@ -136,9 +136,11 @@ void FBlockRegistryInstance::Reset()
 	{
 		if (Block)
 		{
+			//Now it can be gc-ed
 			Block->RemoveFromRoot();
 		}
 	}
+
 	UniqueIndices.Empty();
 
 	bIsInitialized = false;

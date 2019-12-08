@@ -9,6 +9,11 @@ FRMCWrapper::FRMCWrapper(AVoxelWorld* World)
 	RMC->RegisterComponent();
 }
 
+FRMCWrapper::~FRMCWrapper()
+{
+	RMC->DestroyComponent();
+}
+
 void FRMCWrapper::UpdateMeshData(FVoxelPolygonizedData& Data)
 {
 	const int Num = Data.Sections.Num();

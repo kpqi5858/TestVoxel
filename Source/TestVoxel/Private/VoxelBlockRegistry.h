@@ -3,14 +3,8 @@
 #include "CoreMinimal.h"
 #include "TestVoxel.h"
 
-//Parameter is FName, FString
+//Templated GetBlock, accepts FName, FString, const TCHAR*, uint16(Index)
 #define GETBLOCK(x) FBlockRegistry::GetInstance_Ptr()->GetBlock(x)
-//Parameter is TCHAR
-#define GETBLOCK_T(x) FBlockRegistry::GetInstance_Ptr()->GetBlock(FName(x))
-//Parameter is const char*
-#define GETBLOCK_C(x) GETBLOCK_T(TEXT(x))
-//Parameter is unique index
-#define GETBLOCK_INDEX(x) FBlockRegistry::GetInstance_Ptr()->GetBlockByIndex(x)
 
 class UVoxelBlock;
 
@@ -29,11 +23,68 @@ public:
 	void Setup();
 	void Reset();
 
-	UVoxelBlock* GetBlockByIndex(uint16 Index)
+
+	UVoxelBlock* GetBlockByIndex(const uint16 Index)
 	{
 		return UniqueIndices[Index];
 	}
 
+	UVoxelBlock* GetBlockInternal(FName Name)
+	{
+		UVoxelBlock** Find = BlockInstanceRegistry.Find(Name);
+		if (Find)
+		{
+			return *Find;
+		}
+		else
+		{
+			UE_LOG(LogTestVoxel, Error, TEXT("Unknown block name : %s"), *Name.ToString());
+			return GetBlockByIndex(0);
+		}
+	}
+
+	template<typename T>
+	UVoxelBlock* GetBlock(T Name)
+	{
+		static_assert(false, "GetBlock with that type is not implemented");
+		return nullptr;
+	}
+
+	template<>
+	UVoxelBlock* GetBlock<>(const FName Name)
+	{
+		return GetBlockInternal(Name);
+	}
+
+	template<>
+	UVoxelBlock* GetBlock<>(const TCHAR* Name)
+	{
+		//Avoid unnecessary allocations on FName
+		const FName Nam = FName(Name, EFindName::FNAME_Find);
+		if (Nam != NAME_None)
+		{
+			return GetBlock(Nam);
+		}
+		else
+		{
+			UE_LOG(LogTestVoxel, Error, TEXT("Unknown block name string : %s"), Name);
+			return GetBlockByIndex(0);
+		}
+	}
+
+	template<>
+	UVoxelBlock* GetBlock<>(const FString Name)
+	{
+		return GetBlock(*Name);
+	}
+
+	template<>
+	UVoxelBlock* GetBlock<>(const uint16 Id)
+	{
+		return GetBlockByIndex(Id);
+	}
+
+	/*
 	UVoxelBlock* GetBlock(FName Name)
 	{
 		UVoxelBlock** Find = BlockInstanceRegistry.Find(Name);
@@ -60,6 +111,7 @@ public:
 			return GetBlockByIndex(0);
 		}
 	}
+	*/
 
 };
 

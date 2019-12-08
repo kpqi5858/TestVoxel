@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "TestVoxel.h"
 #include "HAL/ThreadSafeBool.h"
 
 enum class EBlockFace : uint8

@@ -18,6 +18,18 @@ class FVoxelMesher;
 class FMeshComponentWrapper;
 class AVoxelGlobalManager;
 
+
+UENUM(BlueprintType)
+enum class EVoxelWorldMode : uint8
+{
+	//Keep generating world
+	//Unload chunk if too far
+	WM_WorldGen,
+	//Generate chunk by placing block
+	//Unload if too far
+	WM_Const
+};
+
 UCLASS()
 class TESTVOXEL_API AVoxelWorld : public AActor
 {
@@ -35,10 +47,13 @@ public:
 	UPROPERTY(EditAnywhere)
 	AVoxelGlobalManager* GlobalManagerDefault;
 
+	UPROPERTY(EditAnywhere)
+	EVoxelWorldMode VoxelWorldMode;
+
 	UPROPERTY()
 	UVoxelWorldGenerator* WorldGenInstance;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly)
 	AVoxelGlobalManager* ActiveGlobalManager;
 
 
