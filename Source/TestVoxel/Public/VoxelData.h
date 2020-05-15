@@ -59,8 +59,8 @@ public:
 };
 
 
-//6byte
-struct FVoxelBlock
+//8byte aligned
+struct alignas(8) FVoxelBlock
 {
 	uint16 Type;
 	FColor Color;
@@ -98,7 +98,7 @@ struct FTemporaryChunk
 
 	FVoxelBlock Data[VOX_ARRAYSIZE];
 	//Indicates which data is modified
-	//(Like caves, which sets block to air, but default FVoxelBlock is air)
+	//(Like caves, which sets block to air)
 	//TODO : Convert to bitflags to save memory
 	bool DirtyData[VOX_ARRAYSIZE] = {};
 
@@ -106,6 +106,11 @@ struct FTemporaryChunk
 
 	FTemporaryChunk()
 	{
+	}
+
+	FTemporaryChunk(const FTemporaryChunk& Copy)
+	{
+		FMemory::Memcpy(this, &Copy, sizeof(FTemporaryChunk));
 	}
 
 	//Sets data, and sets dirty flag

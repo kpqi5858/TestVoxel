@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "TestVoxel.h"
 #include "VoxelData.h"
-#include "VoxelChunk.h"
 #include "VoxelWorldGen.h"
 #include "GameFramework/Actor.h"
 #include "RuntimeMeshComponent.h"
@@ -30,6 +29,15 @@ enum class EVoxelWorldMode : uint8
 	WM_Const
 };
 
+UENUM(BlueprintType)
+enum class EVoxelWorldMesh : uint8
+{
+	//Use RuntimeMeshComponent
+	MESH_RMC,
+	//Use ProceduralMeshComponent
+	MESH_PMC
+};
+
 UCLASS()
 class TESTVOXEL_API AVoxelWorld : public AActor
 {
@@ -49,6 +57,9 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	EVoxelWorldMode VoxelWorldMode;
+
+	UPROPERTY(EditAnywhere)
+	EVoxelWorldMesh VoxelMesh;
 
 	UPROPERTY()
 	UVoxelWorldGenerator* WorldGenInstance;
@@ -87,7 +98,6 @@ public:
 	FMeshComponentWrapper* GetFreeMeshComponent();
 	void FreeMeshComponent(FMeshComponentWrapper* MeshComponent);
 
-	//Destroyes everything
 	void DestroyWorld();
 
 	inline FIntVector WorldPosToVoxelPos(const FVector& WorldPos) const

@@ -77,6 +77,16 @@ public:
 			return EBlockFace::FRONT;
 		}
 	}
+
+	static bool IsInChunkBorder(const FIntVector& LocalPos)
+	{
+		check(VOX_AI_ISVALID(LocalPos.X, LocalPos.Y, LocalPos.Z));
+
+		const int Min = FMath::Min3(LocalPos.X, LocalPos.Y, LocalPos.Z);
+		const int Max = FMath::Max3(LocalPos.X, LocalPos.Y, LocalPos.Z);
+
+		return Min == 0 || Max == (VOX_CHUNKSIZE - 1);
+	}
 };
 
 class FSpinLock

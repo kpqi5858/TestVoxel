@@ -26,8 +26,6 @@ public:
 
 struct FVoxelMesherDefaultSettings
 {
-	bool bDivideSectionsByType = false;
-
 	bool bCreateNormals = true;
 	bool bCreateTangents = false;
 	bool bCreateUVs = true;
@@ -37,6 +35,8 @@ struct FVoxelMesherDefaultSettings
 	//Reference near chunks to occlude the faces in the chunk's border
 	bool bFaceOcclusionBorders = true;
 
+	//Make all solid block to "SolidDefault" block. This will create only 1 section.
+	bool bDebugPolygonize = false;
 
 	float VoxelSize;
 };

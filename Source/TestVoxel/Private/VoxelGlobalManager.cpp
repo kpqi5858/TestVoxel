@@ -27,6 +27,14 @@ void AVoxelGlobalManager::EndPlay(EEndPlayReason::Type EndType)
 
 void AVoxelGlobalManager::Tick(float DeltaTime)
 {
+	const int RemoveInvalidTicks = 600;
+
+	if (TickAge % RemoveInvalidTicks == 0)
+	{
+		RemoveInvalids();
+	}
+
+	TickAge++;
 }
 
 void AVoxelGlobalManager::RegisterInvoker(AActor* Actor)
@@ -52,6 +60,12 @@ void AVoxelGlobalManager::DeregisterInvoker(AActor* Actor)
 		return;
 	}
 	InvokerList.RemoveSwap(Actor);
+}
+
+void AVoxelGlobalManager::RemoveInvalids()
+{
+	InvokerList.RemoveAll([](const AActor* ToCheck) {return IsValid(ToCheck); });
+	WorldsList.RemoveAll([](const AActor* ToCheck) {return IsValid(ToCheck); });
 }
 
 void AVoxelGlobalManager::InitGlobalManager()
@@ -115,16 +129,18 @@ inline FTemporaryChunk* AVoxelGlobalManager::NewTempChunk()
 
 FTemporaryChunk* AVoxelGlobalManager::GetNewTempChunk(UVoxelChunk* OwnerChunk)
 {
-	FScopeSpinLock sl(TempChunkPoolLock);
-
 	FTemporaryChunk* TempChunk = nullptr;
+	
+	TempChunkPoolLock.Lock();
 
 	if (TempChunkPool.Num())
 	{
 		TempChunk = TempChunkPool.Pop(false);
+		TempChunkPoolLock.Unlock();
 	}
 	else
 	{
+		TempChunkPoolLock.Unlock();
 		TempChunk = NewTempChunk();
 	}
 

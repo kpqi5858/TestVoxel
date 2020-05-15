@@ -3,7 +3,6 @@
 #include "CoreMinimal.h"
 #include "VoxelData.h"
 #include "VoxelDataAccessor.h"
-
 #include "VoxelChunk.generated.h"
 
 
@@ -41,7 +40,8 @@ public:
 
 	AVoxelWorld* VoxelWorld;
 
-	bool IsRenderDirty = false;
+	FThreadSafeBool IsRenderDirty = false;
+
 
 public:
 	//Tick function, Always in game thread.
@@ -56,9 +56,12 @@ public:
 
 	void MergeTempChunkNow();
 
+	void OnBlockSet(const FIntVector& LocalPos, const FVoxelBlock& Block);
+
 	FTemporaryChunk* NewTemporaryChunk();
 	void ReleaseTemporaryChunk(FTemporaryChunk* TempChunk);
 	
+	UVoxelChunk* GetAdjacentChunk(EBlockFace Face);
 
 	inline FIntVector GetMinPos() const
 	{
@@ -67,6 +70,11 @@ public:
 	inline FIntVector GetMaxPos() const
 	{
 		return ChunkIndex * (VOX_CHUNKSIZE + 1) - FIntVector(1);
+	}
+
+	inline void SetRenderDirty()
+	{
+		IsRenderDirty = true;
 	}
 
 	FVector GetWorldPos() const;

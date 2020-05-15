@@ -8,7 +8,7 @@
 class AVoxelWorld;
 class FBlockRegistryInstance;
 struct FTemporaryChunk;
-class UVoxelChunk;
+class UVoxelChunk;\
 
 //Class for managing thread pools, etc
 UCLASS()
@@ -18,7 +18,7 @@ class TESTVOXEL_API AVoxelGlobalManager : public AActor
 public:
 	AVoxelGlobalManager();
 
-	TArray<TWeakObjectPtr<AVoxelWorld>> WorldsList;
+	TArray<AVoxelWorld*> WorldsList;
 
 	TSharedPtr<FBlockRegistryInstance> BlockRegistryPtr;
 
@@ -32,6 +32,8 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	int TempChunkPoolInitialCount = 500;
 
+	uint64 TickAge = 0L;
+
 private:
 	TArray<AActor*> InvokerList;
 
@@ -39,6 +41,9 @@ private:
 	FSpinLock TempChunkPoolLock;
 
 	FTemporaryChunk* TempChunkOriginal = nullptr;
+
+private:
+	inline FTemporaryChunk* NewTempChunk();
 
 public:
 	void BeginPlay() override;
@@ -49,16 +54,19 @@ public:
 	void RegisterInvoker(AActor* Actor);
 	void DeregisterInvoker(AActor* Actor);
 
+	void RemoveInvalids();
+
 	void InitGlobalManager();
 	void DeinitGlobalManager();
 
 	void RegisterVoxelWorld(AVoxelWorld* VoxelWorld);
 	void DeregisterVoxelWorld(AVoxelWorld* VoxelWorld);
 
-	inline FTemporaryChunk* NewTempChunk();
 	FTemporaryChunk* GetNewTempChunk(UVoxelChunk* OwnerChunk);
 	void ReleaseTempChunk(FTemporaryChunk* TempChunk);;
 
 	//Calculates minimum distance to invokers
 	float GetDistanceToInvokers(FVector WorldPos);
+
+
 };

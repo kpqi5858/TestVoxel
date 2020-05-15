@@ -79,6 +79,34 @@ void UVoxelChunk::MergeTempChunkNow()
 	}
 }
 
+void UVoxelChunk::OnBlockSet(const FIntVector& LocalPos, const FVoxelBlock& Block)
+{
+	SetRenderDirty();
+
+	if (FVoxelUtilities::IsInChunkBorder(LocalPos))
+	{
+		//We (probably) need to set adjacnet chunk dirty
+
+		const FIntVector& VoxelPos = LocalPos + GetMinPos();
+
+		for (int FaceNum = 0; FaceNum < VOX_FACENUM; FaceNum++)
+		{
+			const EBlockFace Face = static_cast<EBlockFace>(FaceNum);
+			const FIntVector& AdjVoxelPos = VoxelPos + FVoxelUtilities::GetFaceOffset(Face);
+
+			const FIntVector AdjChunkPos = FVoxelUtilities::VoxelPosToChunkIndex(AdjVoxelPos);
+
+			if (AdjChunkPos != ChunkIndex)
+			{
+				//TODO : Calculate face occlusion
+
+				//Set that chunk dirty
+				VoxelWorld->GetChunk(AdjChunkPos)->SetRenderDirty();
+			}
+		}
+	}
+}
+
 FTemporaryChunk* UVoxelChunk::NewTemporaryChunk()
 {
 	FTemporaryChunk* TempChunk = VoxelWorld->ActiveGlobalManager->GetNewTempChunk(this);
@@ -93,6 +121,11 @@ void UVoxelChunk::ReleaseTemporaryChunk(FTemporaryChunk* TempChunk)
 	TemporaryChunkList.Add(TempChunk);
 
 	WorldGenRefs.Decrement();
+}
+
+UVoxelChunk* UVoxelChunk::GetAdjacentChunk(EBlockFace Face)
+{
+	return VoxelWorld->GetChunk(ChunkIndex + FVoxelUtilities::GetFaceOffset(Face));
 }
 
 FVector UVoxelChunk::GetWorldPos() const

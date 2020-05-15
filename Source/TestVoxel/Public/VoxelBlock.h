@@ -5,7 +5,6 @@
 
 #include "VoxelBlock.generated.h"
 
-
 UCLASS(Blueprintable, Abstract)
 class TESTVOXEL_API UVoxelBlock : public UObject
 {
@@ -15,7 +14,7 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	FName RegistryName;
 
-	//If false, no collision (Give it proper VisiblityType)
+	//If false, no collision (Give it proper VisiblityType to work)
 	UPROPERTY(EditDefaultsOnly)
 	bool bDoCollisions = true;
 
@@ -23,7 +22,7 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	int VisiblityType = 0;
 
-	//If nullptr, the block will not visible
+	//If none(nullptr), the block will not visible
 	UPROPERTY(EditDefaultsOnly)
 	UMaterialInterface* Material = nullptr;
 
@@ -31,7 +30,7 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	int32 OverrideTypeId = -1;
 
-	//Don't register this block
+	//Don't register this block?
 	UPROPERTY(EditDefaultsOnly)
 	bool bDontRegister = false;
 

@@ -27,18 +27,45 @@ void FVoxelMesherDefault::Polygonize(FVoxelPolygonizedData& MeshDataOut)
 		const FIntVector VoxelPos = ChunkVoxelPos + LocalPos;
 		const FVoxelBlock& CurrentBlock = InternalArray[VOX_AI(X, Y, Z)];
 
-		UVoxelBlock* VoxelBlock = CurrentBlock.GetVoxelBlock();
+		const bool bInChunkBorder = FVoxelUtilities::IsInChunkBorder(LocalPos);
+
+		const UVoxelBlock* VoxelBlock = CurrentBlock.GetVoxelBlock();
 
 		//If material is null, this means it is not visible and should never be polygonized
 		if (VoxelBlock->Material == nullptr) continue;
 
-		FVoxelPolygonizedDataSection& ThisSection = MeshDataOut.GetSection(CurrentBlock.Type);
-
+		//If bDebugPolygonize enabled, use SolidDefault(Id always 1) block only
+		FVoxelPolygonizedDataSection& ThisSection = MeshDataOut.GetSection(Settings.bDebugPolygonize ? 1 : CurrentBlock.Type);
 
 		for (int FaceNum = 0; FaceNum < VOX_FACENUM; FaceNum++)
 		{
-			EBlockFace Face = static_cast<EBlockFace>(FaceNum);
-			CreateFace(X, Y, Z, Face, CurrentBlock.Color, ThisSection);
+			const EBlockFace Face = static_cast<EBlockFace>(FaceNum);
+			const FIntVector TargetLocalPos = LocalPos + FVoxelUtilities::GetFaceOffset(Face);
+			const FIntVector TargetVoxelPos = ChunkVoxelPos + TargetLocalPos;
+
+			const bool IsRefBlockInsideCunk = VOX_AI_ISVALID(TargetLocalPos.X, TargetLocalPos.Y, TargetLocalPos.Z);
+
+			bool bOccludeThisFace = false;
+
+			if (!IsRefBlockInsideCunk && Settings.bFaceOcclusionBorders)
+			{
+				unimplemented();
+			}
+			if (IsRefBlockInsideCunk && Settings.bFaceOcclusionLocal)
+			{
+				const FVoxelBlock& TargetBlock = InternalArray[VOX_AI(TargetLocalPos.X, TargetLocalPos.Y, TargetLocalPos.Z)];
+
+				bOccludeThisFace = TargetBlock.GetVoxelBlock()->VisiblityType == VoxelBlock->VisiblityType;
+			}
+
+			if (!bOccludeThisFace)
+			{
+				CreateFace(X, Y, Z, Face, CurrentBlock.Color, ThisSection);
+			}
+			else
+			{
+
+			}
 		}
 	}
 }

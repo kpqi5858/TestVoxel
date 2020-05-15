@@ -83,36 +83,6 @@ public:
 	{
 		return GetBlockByIndex(Id);
 	}
-
-	/*
-	UVoxelBlock* GetBlock(FName Name)
-	{
-		UVoxelBlock** Find = BlockInstanceRegistry.Find(Name);
-		if (Find)
-		{
-			return *Find;
-		}
-		else
-		{
-			UE_LOG(LogTestVoxel, Error, TEXT("Unknown block name : %s"), *Name.ToString());
-			return GetBlockByIndex(0);
-		}
-	}
-	UVoxelBlock* GetBlock(FString Name)
-	{
-		FName Nam = FName(*Name, EFindName::FNAME_Find);
-		if (Nam != NAME_None)
-		{
-			return GetBlock(Nam);
-		}
-		else
-		{
-			UE_LOG(LogTestVoxel, Error, TEXT("Unknown block name string : %s"), *Name);
-			return GetBlockByIndex(0);
-		}
-	}
-	*/
-
 };
 
 class TESTVOXEL_API FBlockRegistry

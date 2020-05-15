@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "VoxelWorld.h"
+#include "VoxelChunk.h"
 #include "VoxelMesher.h"
 #include "VoxelMeshComponentWrapper.h"
 #include "VoxelGlobalManager.h"
@@ -23,7 +24,23 @@ void AVoxelWorld::BeginPlay()
 
 FMeshComponentWrapper* AVoxelWorld::NewMeshComponentInternal()
 {
-	FMeshComponentWrapper* MeshComp = new FRMCWrapper(this);
+	FMeshComponentWrapper* MeshComp = nullptr;
+
+	switch (VoxelMesh)
+	{
+	case EVoxelWorldMesh::MESH_RMC :
+	{
+		MeshComp = new FRMCWrapper(this);
+		break;
+	}
+	case EVoxelWorldMesh::MESH_PMC :
+		MeshComp = new FPMCWrapper(this);
+		break;
+	default:
+		checkNoEntry();
+		break;
+	}
+
 	return AllMeshes.Add_GetRef(MeshComp);
 }
 
@@ -72,7 +89,7 @@ void AVoxelWorld::InitWorld()
 		SetGlobalManager(GlobalManagerDefault);
 	}
 
-	auto Test = GetChunk(FIntVector(-1));
+	auto Test = GetChunk(FIntVector(0));
 
 	Test->GenerateWorld();
 	Test->MergeTempChunkNow();

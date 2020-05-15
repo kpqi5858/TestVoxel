@@ -27,6 +27,6 @@ void UVoxelFlatWorldGenerator::GenerateWorld(UVoxelChunk* Chunk, IVoxelDataAcces
 	for (int Z = 0; Z < VOX_CHUNKSIZE; Z++)
 	{
 		const FIntVector VoxelPos = BasePos + FIntVector(X, Y, Z);
-		DataAccessor->SetBlock(VoxelPos, FVoxelBlock(/*VoxelPos.Z < 0*/ FMath::RandBool() ? BlockToUse : AirBlock));
+		DataAccessor->SetBlock(VoxelPos, FVoxelBlock(/*VoxelPos.Z < 0*/FMath::RandBool() ? BlockToUse : AirBlock));
 	}
 }

@@ -13,6 +13,8 @@ void FVoxelDataStorage::SetBlock(const FIntVector& VoxelPos, const FVoxelBlock& 
 	const FIntVector LocalPos = FVoxelUtilities::VoxelPosToLocalPos(VoxelPos);
 
 	InternalData[VOX_AI(LocalPos.X, LocalPos.Y, LocalPos.Z)] = Block;
+
+	Owner->OnBlockSet(LocalPos, Block);
 }
 
 FVoxelBlock FVoxelDataStorage::GetBlock(const FIntVector& VoxelPos) const
