@@ -89,20 +89,21 @@ inline void FVoxelMesherDefault::CreateFace(const int& X, const int& Y, const in
 
 	const float VoxSize = Settings.VoxelSize;
 
-	FVector BoxVerts[8];
-	BoxVerts[0] = FVector(0, VoxSize, VoxSize);
-	BoxVerts[1] = FVector(VoxSize, VoxSize, VoxSize);
-	BoxVerts[2] = FVector(VoxSize, 0, VoxSize);
-	BoxVerts[3] = FVector(0, 0, VoxSize);
-
-	BoxVerts[4] = FVector(0, VoxSize, 0);
-	BoxVerts[5] = FVector(VoxSize, VoxSize, 0);
-	BoxVerts[6] = FVector(VoxSize, 0, 0);
-	BoxVerts[7] = FVector(0, 0, 0);
-
-	auto VertexBuilder = [&](FVector& V, FVector& N, FVector2D UV)
+	const FVector BoxVerts[8] =
 	{
-		ThisSection.Vertices.Add(V + FVector(X * VoxSize, Y * VoxSize, Z * VoxSize));
+		FVector(0, 1, 1),
+		FVector(1, 1, 1),
+		FVector(1, 0, 1),
+		FVector(0, 0, 1),
+		FVector(0, 1, 0),
+		FVector(1, 1, 0),
+		FVector(1, 0, 0),
+		FVector(0, 0, 0)
+	};
+
+	auto VertexBuilder = [&](const FVector& V, const FVector& N, const FVector2D UV)
+	{
+		ThisSection.Vertices.Add((V + FVector(X, Y, Z)) * VoxSize);
 		if (Settings.bCreateNormals)		ThisSection.Normals.Add(N);
 		if (Settings.bCreateUVs)			ThisSection.UVs.Add(UV);
 		if (Settings.bCreateVertexColors)	ThisSection.Colors.Add(Color);

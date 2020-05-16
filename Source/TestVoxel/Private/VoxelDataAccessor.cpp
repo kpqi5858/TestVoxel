@@ -5,7 +5,7 @@
 FVoxelWorldGenAccessor::FVoxelWorldGenAccessor(UVoxelChunk* Chunk)
 	: Chunk(Chunk), World(Chunk->VoxelWorld)
 {
-	TempChunks.Reserve(20);
+	TempChunks.Reserve(10);
 }
 
 FVoxelWorldGenAccessor::~FVoxelWorldGenAccessor()
@@ -15,7 +15,20 @@ FVoxelWorldGenAccessor::~FVoxelWorldGenAccessor()
 
 inline FTemporaryChunk* FVoxelWorldGenAccessor::GetTempChunk(const FIntVector& ChunkPos)
 {
+	//Special handling
+	if (ChunkPos == Chunk->ChunkIndex)
+	{
+		if (LocalTempChunk == nullptr)
+		{
+			LocalTempChunk = Chunk->NewTemporaryChunk();
+			TempChunks.Add(ChunkPos, LocalTempChunk);
+		}
+
+		return LocalTempChunk;
+	}
+
 	auto Temp = TempChunks.Find(ChunkPos);
+
 	if (Temp)
 	{
 		return *Temp;

@@ -3,8 +3,11 @@
 #include "CoreMinimal.h"
 #include "TestVoxel.h"
 
+
+#define GETBLOCKREG() FBlockRegistry::GetInstance_Ptr()
+
 //Templated GetBlock, accepts FName, FString, const TCHAR*, uint16(Index)
-#define GETBLOCK(x) FBlockRegistry::GetInstance_Ptr()->GetBlock(x)
+#define GETBLOCK(x) GETBLOCKREG()->GetBlock(x)
 
 class UVoxelBlock;
 
@@ -23,9 +26,18 @@ public:
 	void Setup();
 	void Reset();
 
+	bool IsValidIndex(const uint16 Index)
+	{
+		return UniqueIndices.IsValidIndex(Index);
+	}
 
 	UVoxelBlock* GetBlockByIndex(const uint16 Index)
 	{
+		if (!ensureMsgf(IsValidIndex(Index), TEXT("Invalid index in GetBlockByIndex : %d"), Index))
+		{
+			return GetBlockByIndex(0);
+		}
+
 		return UniqueIndices[Index];
 	}
 
@@ -63,7 +75,7 @@ public:
 		const FName Nam = FName(Name, EFindName::FNAME_Find);
 		if (Nam != NAME_None)
 		{
-			return GetBlock(Nam);
+			return GetBlockInternal(Nam);
 		}
 		else
 		{

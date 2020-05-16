@@ -54,6 +54,9 @@ private:
 	//Temporary chunks
 	TMap<FIntVector, FTemporaryChunk*> TempChunks;
 
+	//The generator chunk's temporary chunk
+	FTemporaryChunk* LocalTempChunk = nullptr;
+
 	inline FTemporaryChunk* GetTempChunk(const FIntVector& ChunkPos);
 
 public:

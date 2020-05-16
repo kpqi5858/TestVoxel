@@ -14,9 +14,13 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	FName RegistryName;
 
-	//If false, no collision (Give it proper VisiblityType to work)
+	//If false, no collision will be created (Give it proper VisiblityType to work)
 	UPROPERTY(EditDefaultsOnly)
 	bool bDoCollisions = true;
+
+	//Is this block treated as an empty space?
+	UPROPERTY(EditDefaultsOnly)
+	bool bIsEmptyBlock = false;
 
 	//Blocks with same VisitlibyType will occlude each other
 	UPROPERTY(EditDefaultsOnly)
@@ -42,7 +46,6 @@ public:
 	uint16 TypeId = 0;
 
 
-	//TypeId getter for blueprints
 	UFUNCTION(BlueprintCallable)
 	int GetTypeId() const
 	{
@@ -62,6 +65,7 @@ public:
 	UDefaultBlockAir()
 	{
 		RegistryName = TEXT("Air");
+		bIsEmptyBlock = true;
 		bDoCollisions = false;
 		VisiblityType = 0;
 		OverrideTypeId = 0;

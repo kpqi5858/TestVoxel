@@ -2,6 +2,7 @@
 #include "VoxelWorld.h"
 #include "VoxelBlockRegistry.h"
 #include "VoxelData.h"
+#include "GameFramework/PlayerController.h"
 
 #define INIT_IF_NOT_INITED() if (!bIsInitialized) InitGlobalManager();
 
@@ -39,7 +40,7 @@ void AVoxelGlobalManager::Tick(float DeltaTime)
 
 void AVoxelGlobalManager::RegisterInvoker(AActor* Actor)
 {
-	if (IsValid(Actor))
+	if (!IsValid(Actor))
 	{
 		UE_LOG(LogTestVoxel, Error, TEXT("%s : RegisterInvoker with invalid actor"), *GetName());
 		return;
@@ -82,6 +83,11 @@ void AVoxelGlobalManager::InitGlobalManager()
 	for (int Count = 0; Count < TempChunkPoolInitialCount; Count++)
 	{
 		TempChunkPool.Add(NewTempChunk());
+	}
+
+	if (bRegisterPlayerPawn)
+	{
+		InvokerList.Add(GetWorld()->GetFirstPlayerController()->GetPawn());
 	}
 
 	bIsInitialized = true;
@@ -162,19 +168,17 @@ void AVoxelGlobalManager::ReleaseTempChunk(FTemporaryChunk* TempChunk)
 float AVoxelGlobalManager::GetDistanceToInvokers(FVector WorldPos)
 {
 	float Result = FLT_MAX;
-
+	
 	if (InvokerList.Num() == 0)
 	{
 		UE_LOG(LogTestVoxel, Error, TEXT("%s : GetDistanceToInvokers with empty InvokerList"), *GetName());
 		return Result;
 	}
-	for (auto& Invoker : InvokerList)
+
+	ForEachInvokers([&](AActor* Invoker)
 	{
-		if (IsValid(Invoker))
-		{
-			Result = FMath::Min(Result, FVector::Dist(WorldPos, Invoker->GetActorLocation()));
-		}
-	}
+		Result = FMath::Min(Result, FVector::Dist(WorldPos, Invoker->GetActorLocation()));
+	});
 
 	return Result;
 }

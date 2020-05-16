@@ -125,6 +125,8 @@ void FBlockRegistryInstance::Setup()
 		UniqueIndices[Index]->bIsRegistered = true;
 	}
 
+	checkf(UniqueIndices[0]->GetClass() == UDefaultBlockAir::StaticClass(), TEXT("Index 0 must be UDefaultBlockAir"));
+
 	bIsInitialized = true;
 }
 

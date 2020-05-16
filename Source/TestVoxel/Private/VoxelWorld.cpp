@@ -5,17 +5,15 @@
 #include "VoxelMesher.h"
 #include "VoxelMeshComponentWrapper.h"
 #include "VoxelGlobalManager.h"
+#include "DrawDebugHelpers.h"
 
-// Sets default values
 AVoxelWorld::AVoxelWorld()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
 }
 
-// Called when the game starts or when spawned
 void AVoxelWorld::BeginPlay()
 {
 	Super::BeginPlay();
@@ -37,18 +35,18 @@ FMeshComponentWrapper* AVoxelWorld::NewMeshComponentInternal()
 		MeshComp = new FPMCWrapper(this);
 		break;
 	default:
-		checkNoEntry();
+		unimplemented();
 		break;
 	}
 
 	return AllMeshes.Add_GetRef(MeshComp);
 }
 
-// Called every frame
 void AVoxelWorld::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	ChunkManager->ChunkManagerTick();
 }
 
 void AVoxelWorld::EndPlay(EEndPlayReason::Type Reason)
@@ -58,19 +56,13 @@ void AVoxelWorld::EndPlay(EEndPlayReason::Type Reason)
 
 UVoxelChunk* AVoxelWorld::GetChunk(const FIntVector& ChunkPos)
 {
-	FScopeLock Lock(&ChunkListLock);
-
-	auto Find = ChunksLoaded.Find(ChunkPos);
-	if (Find) 
-		return *Find;
-	
-	UVoxelChunk* NewChunk = NewObject<UVoxelChunk>(this);
-	NewChunk->Setup(this, ChunkPos);
-	return ChunksLoaded.Add(ChunkPos, NewChunk);
+	return ChunkManager->GetChunk(ChunkPos);
 }
 
 void AVoxelWorld::InitWorld()
 {
+	check(!bWorldInited);
+
 	//Init worldgen
 	UClass* WorldGenClass = WorldGenerator.Get();
 	if (WorldGenClass == nullptr)
@@ -79,9 +71,9 @@ void AVoxelWorld::InitWorld()
 		WorldGenClass = UVoxelEmptyWorldGenerator::StaticClass();
 	}
 
-	UVoxelWorldGenerator* WorldGenInst = NewObject<UVoxelWorldGenerator>(this, WorldGenClass);
-	WorldGenInst->Setup();
+	UVoxelWorldGenerator* WorldGenInst = NewObject<UVoxelWorldGenerator>(this, WorldGenClass, TEXT("WorldGenObj"));
 
+	WorldGenInst->Setup();
 	WorldGenInstance = WorldGenInst;
 
 	if (GlobalManagerDefault)
@@ -89,11 +81,10 @@ void AVoxelWorld::InitWorld()
 		SetGlobalManager(GlobalManagerDefault);
 	}
 
-	auto Test = GetChunk(FIntVector(0));
+	ChunkManager = new FVoxelChunkManager(this);
+	ChunkManager->Init();
 
-	Test->GenerateWorld();
-	Test->MergeTempChunkNow();
-	Test->PolygonizeNow();
+	bWorldInited = true;
 }
 
 void AVoxelWorld::SetGlobalManager(AVoxelGlobalManager* Manager)
@@ -139,9 +130,24 @@ void AVoxelWorld::FreeMeshComponent(FMeshComponentWrapper* MeshComponent)
 	FreeMeshes.Add(MeshComponent);
 }
 
+void AVoxelWorld::DrawDebugBlockAt(const FIntVector& VoxelPos)
+{
+	DrawDebugBox(GetWorld(), FVector(VoxelPos * VoxelSize) + FVector(VoxelSize / 2), FVector(VoxelSize / 2), FColor::Blue);
+}
+
+void AVoxelWorld::DrawDebugChunkBorder(const FIntVector& ChunkPos)
+{
+	DrawDebugBox(GetWorld(), (FVector(ChunkPos * VOX_CHUNKSIZE) + FVector(VOX_CHUNKSIZE / 2)) * VoxelSize, FVector(VoxelSize * VOX_CHUNKSIZE / 2), FColor::Orange);
+}
+
 void AVoxelWorld::DestroyWorld()
 {
-	ChunksLoaded.Empty();
+	check(bWorldInited);
+
+	ChunkManager->Destroy();
+	delete ChunkManager;
+	ChunkManager = nullptr;
+
 	for (auto& MeshComp : AllMeshes)
 	{
 		delete MeshComp;
@@ -149,4 +155,3 @@ void AVoxelWorld::DestroyWorld()
 	AllMeshes.Empty();
 	FreeMeshes.Empty();
 }
-

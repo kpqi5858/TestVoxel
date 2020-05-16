@@ -6,6 +6,7 @@
 #include "TestVoxel.h"
 #include "VoxelData.h"
 #include "VoxelWorldGen.h"
+#include "VoxelChunkManager.h"
 #include "GameFramework/Actor.h"
 #include "RuntimeMeshComponent.h"
 
@@ -67,11 +68,13 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 	AVoxelGlobalManager* ActiveGlobalManager;
 
+	UPROPERTY(BlueprintReadOnly)
+	bool bWorldInited = false;
 
 	TArray<FMeshComponentWrapper*> FreeMeshes;
 	TArray<FMeshComponentWrapper*> AllMeshes;
 
-	FCriticalSection ChunkListLock;
+	FVoxelChunkManager* ChunkManager = nullptr;
 
 protected:
 	virtual void BeginPlay() override;
@@ -94,15 +97,21 @@ public:
 
 	TSharedPtr<FVoxelMesher> GetMesher(UVoxelChunk* Chunk);
 
-
 	FMeshComponentWrapper* GetFreeMeshComponent();
 	void FreeMeshComponent(FMeshComponentWrapper* MeshComponent);
+
+	void DrawDebugBlockAt(const FIntVector& VoxelPos);
+	void DrawDebugChunkBorder(const FIntVector& ChunkPos);
 
 	void DestroyWorld();
 
 	inline FIntVector WorldPosToVoxelPos(const FVector& WorldPos) const
 	{
-		return FIntVector(WorldPos / VoxelSize);
+		float Size = VoxelSize;
+
+		return FIntVector(FMath::FloorToInt(WorldPos.X / Size)
+			, FMath::FloorToInt(WorldPos.Y / Size)
+			, FMath::FloorToInt(WorldPos.Z / Size));
 	}
 
 	

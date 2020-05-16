@@ -8,7 +8,7 @@
 class AVoxelWorld;
 class FBlockRegistryInstance;
 struct FTemporaryChunk;
-class UVoxelChunk;\
+class UVoxelChunk;
 
 //Class for managing thread pools, etc
 UCLASS()
@@ -23,13 +23,13 @@ public:
 	TSharedPtr<FBlockRegistryInstance> BlockRegistryPtr;
 
 	bool bIsInitialized = false;
-	
+
 	//Register player pawn automatically?
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly)
 	bool bRegisterPlayerPawn = false;
 
 	//Temporary Chunk pool's initial objects
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly)
 	int TempChunkPoolInitialCount = 500;
 
 	uint64 TickAge = 0L;
@@ -50,8 +50,10 @@ public:
 	void EndPlay(EEndPlayReason::Type EndType) override;
 
 	void Tick(float DeltaTime) override;
-
+	
+	UFUNCTION(BlueprintCallable)
 	void RegisterInvoker(AActor* Actor);
+	UFUNCTION(BlueprintCallable)
 	void DeregisterInvoker(AActor* Actor);
 
 	void RemoveInvalids();
@@ -68,5 +70,27 @@ public:
 	//Calculates minimum distance to invokers
 	float GetDistanceToInvokers(FVector WorldPos);
 
+	template<typename Lambda>
+	void ForEachInvokers(Lambda Func)
+	{
+		bool HasInvalids = false;
+
+		for (auto& Invoker : InvokerList)
+		{
+			if (IsValid(Invoker))
+			{
+				Func(Invoker);
+			}
+			else
+			{
+				HasInvalids = true;
+			}
+		}
+
+		if (HasInvalids)
+		{
+			RemoveInvalids();
+		}
+	};
 
 };

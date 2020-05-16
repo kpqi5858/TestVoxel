@@ -7,6 +7,8 @@ FRMCWrapper::FRMCWrapper(AVoxelWorld* World)
 	RMC = NewObject<URuntimeMeshComponent>(World);
 	RMC->SetupAttachment(World->GetRootComponent());
 	RMC->RegisterComponent();
+
+	StaticProvider = RMC->GetOrCreateRuntimeMesh()->InitializeStaticProvider();
 }
 
 FRMCWrapper::~FRMCWrapper()
@@ -20,8 +22,11 @@ void FRMCWrapper::UpdateMeshData(FVoxelPolygonizedData& Data)
 	for (int Index = 0; Index < Num; Index++)
 	{
 		auto& Section = Data.Sections[Index];
-		RMC->SetMaterial(Index, Section.Material);
-		RMC->CreateMeshSection(Index, Section.Vertices, Section.Tris, Section.Normals, Section.UVs, Section.Colors, TArray<FRuntimeMeshTangent>(), Section.bHasCollision);
+		auto* RuntimeMesh = RMC->GetRuntimeMesh();
+
+		RuntimeMesh->SetupMaterialSlot(Index, *FString::Printf(TEXT("VoxelSection-%d"), Index), Section.Material);
+		
+		StaticProvider->CreateSectionFromComponents(0, Index, Index, Section.Vertices, Section.Tris, Section.Normals, Section.UVs, Section.Colors, TArray<FRuntimeMeshTangent>(), ERuntimeMeshUpdateFrequency::Infrequent, Section.bHasCollision);
 	}
 }
 

@@ -65,17 +65,20 @@ struct alignas(8) FVoxelBlock
 	uint16 Type;
 	FColor Color;
 
+	//0 is always air
 	FVoxelBlock()
 		: Type(0), Color(FColor::White)
 	{
 
 	}
-	FVoxelBlock(uint16 Type, FColor Color = FColor::White)
+
+	FVoxelBlock(const uint16 Type, const FColor Color = FColor::White)
 		: Type(Type), Color(Color)
 	{
+		check(GETBLOCKREG()->IsValidIndex(Type));
 	}
 
-	FVoxelBlock(UVoxelBlock* Block, FColor ArgColor = FColor::White)
+	FVoxelBlock(const UVoxelBlock* Block, const FColor ArgColor = FColor::White)
 	{
 		check(Block->bIsRegistered);
 		Color = ArgColor;
@@ -84,8 +87,6 @@ struct alignas(8) FVoxelBlock
 
 	inline UVoxelBlock* GetVoxelBlock() const
 	{
-		//GETBLOCK(Color);
-
 		return GETBLOCK(Type);
 	}
 };
@@ -97,6 +98,7 @@ struct FTemporaryChunk
 	int Priority;
 
 	FVoxelBlock Data[VOX_ARRAYSIZE];
+
 	//Indicates which data is modified
 	//(Like caves, which sets block to air)
 	//TODO : Convert to bitflags to save memory

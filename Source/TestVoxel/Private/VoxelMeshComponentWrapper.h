@@ -2,6 +2,7 @@
 
 #include "VoxelData.h"
 #include "RuntimeMeshComponent.h"
+#include "Providers/RuntimeMeshProviderStatic.h"
 #include "ProceduralMeshComponent.h"
 
 class AVoxelWorld;
@@ -27,6 +28,8 @@ public:
 
 	AVoxelWorld* VoxelWorld;
 	URuntimeMeshComponent* RMC;
+
+	URuntimeMeshProviderStatic* StaticProvider;
 
 	virtual void UpdateMeshData(FVoxelPolygonizedData& Data) override;
 	virtual void SetPosition(const FVector WorldPos) override;

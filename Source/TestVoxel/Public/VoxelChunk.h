@@ -38,10 +38,12 @@ public:
 
 	FIntVector ChunkIndex;
 
+	UPROPERTY()
 	AVoxelWorld* VoxelWorld;
 
 	FThreadSafeBool IsRenderDirty = false;
 
+	EChunkState ChunkState = EChunkState::INVALID;
 
 public:
 	//Tick function, Always in game thread.

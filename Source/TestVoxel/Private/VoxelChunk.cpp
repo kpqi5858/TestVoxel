@@ -19,10 +19,13 @@ void UVoxelChunk::Setup(AVoxelWorld* World, const FIntVector& ChunkPos)
 {
 	VoxelWorld = World;
 	ChunkIndex = ChunkPos;
+	ChunkState = EChunkState::LOADED;
 }
 
 void UVoxelChunk::GenerateWorld()
 {
+	ChunkState = EChunkState::WORLDGEN;
+
 	FVoxelWorldGenAccessor* Accessor = new FVoxelWorldGenAccessor(this);
 	VoxelWorld->WorldGenInstance->GenerateWorld(this, Accessor);
 	delete Accessor;
@@ -77,6 +80,8 @@ void UVoxelChunk::MergeTempChunkNow()
 	{
 		VoxelWorld->ActiveGlobalManager->ReleaseTempChunk(Ptr);
 	}
+
+	ChunkState = EChunkState::DONE;
 }
 
 void UVoxelChunk::OnBlockSet(const FIntVector& LocalPos, const FVoxelBlock& Block)
